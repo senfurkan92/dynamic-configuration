@@ -19,19 +19,16 @@ namespace DynamicConfiguration.Persistance.Services
 		private readonly IConfigurationSettingRabbitMqService _rabbitMqService;
 		private readonly string _mongoCstr;
 		private readonly string _mongoDatabaseName;
-		private readonly int? _refreshIntervalMs;
-
-		public ConfigurationSettingService(string mongoCstr, string mongoDatabaseName, int? refreshIntervalMs = default)
+		public ConfigurationSettingService(string mongoCstr, string mongoDatabaseName)
 		{
-			var redisCstr = "localhost:6379";
-			var rabbitMqCstr = "amqp://guest:guest@localhost:5672/";
+			var redisCstr = Environment.GetEnvironmentVariable("REDIS_CONNECTION_STRING") ?? "localhost:6379";
+			var rabbitMqCstr = Environment.GetEnvironmentVariable("RABBITMQ_CONNECTION_STRING") ?? "amqp://guest:guest@localhost:5672/";
 
 			_mongoCstr = mongoCstr;
 			_mongoDatabaseName = mongoDatabaseName;
 			_repository = new ConfigurationSettingMongoRepository(mongoCstr, mongoDatabaseName);
 			_redisService = new ConfigurationSettingRedisService(mongoCstr, mongoDatabaseName, redisCstr);
 			_rabbitMqService = new ConfigurationSettingRabbitMqService(mongoCstr, mongoDatabaseName, rabbitMqCstr);
-			_refreshIntervalMs = refreshIntervalMs;
 		}
 
 		public async Task<ConfigurationSettingCreateResponseDto> Create(ConfigurationSettingCreateRequestDto dto, CancellationToken cancellationToken)
@@ -99,10 +96,14 @@ namespace DynamicConfiguration.Persistance.Services
 
 		public async Task<List<ConfigurationSettingListByApplicationResponseDto>> ListByApplication(ConfigurationSettingListByApplicationRequestDto dto, CancellationToken cancellationToken)
 		{
-			var documents = await _repository.List(x => dto.ApplicationName == null || x.ApplicationName == dto.ApplicationName, cancellationToken);
+			var documents = await _redisService.ListByApplication(_mongoCstr, _mongoDatabaseName, dto.ApplicationName, cancellationToken);
 
-			return documents.Adapt<List<ConfigurationSettingListByApplicationResponseDto>>()
-				?? new();
+			return documents;
+		}
+
+		public async Task RefreshListByApplication(ConfigurationSettingRefreshListByApplicationRequestDto dto, CancellationToken cancellationToken)
+		{
+			await _redisService.RefreshListByApplication(_mongoCstr, _mongoDatabaseName, dto.ApplicationName, cancellationToken);
 		}
 
 		public async Task<ConfigurationSettingUpdateResponseDto> Update(ConfigurationSettingUpdateRequestDto dto, CancellationToken cancellationToken)

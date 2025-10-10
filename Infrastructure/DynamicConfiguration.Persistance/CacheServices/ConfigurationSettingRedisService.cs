@@ -69,7 +69,38 @@ namespace DynamicConfiguration.Persistance.CacheServices
 			await _redis.KeyDeleteAsync(key);
 		}
 
+		public async Task<List<ConfigurationSettingListByApplicationResponseDto>> ListByApplication(string cstr, string dbName, string application, CancellationToken cancellationToken)
+		{
+			var key = GetListByApplication(cstr, dbName, application);
+
+			var cached = await _redis.StringGetAsync(key);
+
+			if (cached.HasValue)
+				return JsonConvert.DeserializeObject<List<ConfigurationSettingListByApplicationResponseDto>>(cached.ToString()) ?? new ();
+
+			var documents = await _repository.List(x => x.ApplicationName == application && x.IsActive, cancellationToken);
+
+			var dto = documents.Adapt<List<ConfigurationSettingListByApplicationResponseDto>>() ?? new ();
+
+			await _redis.StringSetAsync(key, JsonConvert.SerializeObject(dto));
+
+			return dto;
+		}
+
+		public async Task RefreshListByApplication(string cstr, string dbName, string application, CancellationToken cancellationToken)
+		{
+			var key = GetListByApplication(cstr, dbName, application);
+
+			var documents = await _repository.List(x => x.ApplicationName == application && x.IsActive, cancellationToken);
+
+			var dto = documents.Adapt<List<ConfigurationSettingListByApplicationResponseDto>>() ?? new();
+
+			await _redis.StringSetAsync(key, JsonConvert.SerializeObject(dto));
+		}
+
 		private string GetKey(string cstr, string dbName, string application, string name) => $"{nameof(ConfigurationSetting)}.{ComputeHash(cstr, dbName)}.{application}.{name}";
+
+		private string GetListByApplication(string cstr, string dbName, string application) => $"{nameof(ConfigurationSetting)}.{ComputeHash(cstr, dbName)}.{application}";
 
 		private string ComputeHash(string cstr, string dbName)
 		{

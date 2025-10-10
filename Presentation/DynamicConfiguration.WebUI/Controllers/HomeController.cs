@@ -3,12 +3,17 @@ using Microsoft.AspNetCore.Mvc;
 using DynamicConfiguration.WebUI.Models;
 using DynamicConfiguration.Persistance.Services;
 using DynamicConfiguration.Application.Dtos.ConfigurationSettingDtos;
+using DynamicConfiguration.Lib;
 
 namespace DynamicConfiguration.WebUI.Controllers;
 
 public class HomeController : Controller
 {
-    public IActionResult Index()
+	private ConfigurationReader? _configurationReader;
+	private string? _mongoCstr;
+	private string? _mongoDatabaseName;
+
+	public IActionResult Index()
     {
         return View();
     }
@@ -23,14 +28,14 @@ public class HomeController : Controller
         return await service.ListApplications(cancellationToken);
 	}
 
-	public async Task<List<ConfigurationSettingListByApplicationResponseDto>> ListConfigurationSettings([FromBody] ConfigurationSettingListConfigurationSettingsRequest request, CancellationToken cancellationToken)
+	public async Task<List<ConfigurationSettingListResponseDto>> ListConfigurationSettings([FromBody] ConfigurationSettingListConfigurationSettingsRequest request, CancellationToken cancellationToken)
     {
 		var service = new ConfigurationSettingService(
 				request.MongoCstr,
 				request.MongoDatabaseName
 			);
 
-        return await service.ListByApplication(new ConfigurationSettingListByApplicationRequestDto(request.ApplicationName), cancellationToken);
+        return await service.List(cancellationToken);
 	}
 
 	public async Task<ConfigurationSettingGetResponseDto?> GetConfiGurationSetting([FromBody] ConfigurationSettingGetRequest request, CancellationToken cancellationToken)
@@ -88,6 +93,21 @@ public class HomeController : Controller
 		return await service.Delete(new ConfigurationSettingDeleteRequestDto(
 				request.Id
 			), cancellationToken);
+	}
+
+	public object? GetValue([FromBody] ConfigurationSettingGetValueRequest request, CancellationToken cancellationToken)
+	{
+		if (_configurationReader == null || _mongoCstr != request.MongoCstr || _mongoDatabaseName != request.MongoDatabaseName)
+		{ 
+			_configurationReader = new ConfigurationReader(request.ApplicationName, request.MongoCstr, request.MongoDatabaseName, 5000);
+		}
+
+		_mongoCstr = request.MongoCstr;
+		_mongoDatabaseName = request.MongoDatabaseName;
+
+		var data = _configurationReader.GetValue(request.Name);
+
+		return data;
 	}
 
 	public IActionResult Privacy()

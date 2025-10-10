@@ -9,17 +9,26 @@ namespace DynamicConfiguration.Lib
 	{
 		private readonly IConfigurationSettingService _service;
 		private readonly string _applicationName;
+		private List<ConfigurationSettingListByApplicationResponseDto> _config = new();
+		private readonly System.Timers.Timer _timer;
 
 		public ConfigurationReader(string applicationName, string connectionString, string databaseName, int refreshIntervalMs)
 		{
-			_service = new ConfigurationSettingService(connectionString, databaseName, refreshIntervalMs);
+			_service = new ConfigurationSettingService(connectionString, databaseName);
 
 			_applicationName = applicationName;
+
+			LoadConfiguration();
+
+			_timer = new System.Timers.Timer(refreshIntervalMs);
+			_timer.Elapsed += async (sender, e) => await RefreshConfiguration();
+			_timer.AutoReset = true;
+			_timer.Start();
 		}
 
-		public async Task<object?> GetValue(string key, CancellationToken cancellationToken = default)
+		public object? GetValue(string key, CancellationToken cancellationToken = default)
 		{
-			var stringValue = await _service.GetByName(new ConfigurationSettingGetByNameRequestDto(_applicationName, key), cancellationToken);
+			var stringValue = _config.FirstOrDefault(x => x.Name == key);
 
 			if (stringValue == null)
 				return default;
@@ -29,14 +38,24 @@ namespace DynamicConfiguration.Lib
 			return ConvertToType(stringValue.Value, targetType);
 		}
 
-		public async Task<T?> GetValue<T>(string key, CancellationToken cancellationToken = default)
+		public T? GetValue<T>(string key, CancellationToken cancellationToken = default)
 		{
-			var stringValue = await _service.GetByName(new ConfigurationSettingGetByNameRequestDto(_applicationName, key), cancellationToken);
+			var stringValue = _config.FirstOrDefault(x => x.Name == key);
 
 			if (stringValue == null)
 				return default(T?);
 
 			return (T)ConvertToType(stringValue.Value, typeof(T));
+		}
+
+		private void LoadConfiguration()
+		{ 
+			_config = _service.ListByApplication(new ConfigurationSettingListByApplicationRequestDto(_applicationName), default).Result ?? new ();
+		}
+
+		private async Task RefreshConfiguration()
+		{
+			await _service.RefreshListByApplication(new ConfigurationSettingRefreshListByApplicationRequestDto(_applicationName), default);
 		}
 
 		private object ConvertToType(string value, Type targetType)

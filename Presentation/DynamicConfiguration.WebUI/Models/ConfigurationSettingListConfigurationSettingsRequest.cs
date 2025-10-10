@@ -2,7 +2,6 @@
 {
 	public record ConfigurationSettingListConfigurationSettingsRequest(
 			string MongoCstr, 
-			string MongoDatabaseName,
-			string ApplicationName
+			string MongoDatabaseName
 		);
 }

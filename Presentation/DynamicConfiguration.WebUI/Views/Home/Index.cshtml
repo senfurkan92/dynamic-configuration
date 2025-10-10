@@ -8,7 +8,7 @@
 			<h3 class="text-2xl font-bold">Configuration Settings</h3>
 		</div>
 		<div class="col-span-12 mt-2">
-			<div class="card shadow-sm">
+			<div class="card bg-base-200 shadow-sm">
 				<div class="card-body">
 					<div class="flex align-items-center gap-3">
 						<input v-model="mongoCstr" type="text" placeholder="Connection String" class="input" />
@@ -19,10 +19,11 @@
 			</div>
 		</div>
 		<div class="col-span-12 mt-2" v-if="isConnected">
-			<div class="card shadow-sm">
+			<div class="card bg-base-200 shadow-sm">
 				<div class="card-body">
 					<div class="text-end">
-						<button class="btn btn-secondary" v-on:click="openCreateModal">Add</button>
+						<button class="btn btn-secondary me-4" v-on:click="openCreateModal">Add</button>
+						<button class="btn btn-primary" v-on:click="openGetValueModal">Get Value</button>
 					</div>
 					<table class="table">
 						<thead>
@@ -148,6 +149,26 @@
 			</div>
 		</div>
 	</dialog>
+
+	<dialog id="my_modal_5" class="modal">
+		<div class="modal-box">
+			<form method="dialog">
+				<button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+			</form>
+			<h3 class="text-lg font-bold">Get Value</h3>
+			<div class="flex gap-1 flex-col">
+				<fieldset class="fieldset">
+					<legend class="fieldset-legend">Application Name</legend>
+					<input v-model="getValuePayload.applicationName" type="text" class="input" placeholder="Application Name" />
+				</fieldset>
+				<fieldset class="fieldset">
+					<legend class="fieldset-legend">Name</legend>
+					<input v-model="getValuePayload.name" type="text" class="input" placeholder="Name" />
+				</fieldset>
+				<button class="btn mt-2" v-on:click="getValue">Show Value</button>
+			</div>
+		</div>
+	</dialog>
 </div>
 
 <script>
@@ -156,7 +177,7 @@
 	createApp({
 		data() {
 			return {
-				mongoCstr: "mongodb://root:root@localhost:27017",
+				mongoCstr: "@(Environment.GetEnvironmentVariable("MONGODB_CONNECTION_STRING") ?? "mongodb://root:root@localhost:27017")",
 				mongoDatabaseName: "configurationSettingsDb",
 				configurations: [],
 				isConnected: false,
@@ -175,12 +196,20 @@
 					isActive: null,
 					timeStamp: null,
 					applicationName: null
+				},
+				getValuePayload: {
+					applicationName: null,
+					name: null
 				}
 			}
 		},
 		methods: {
 			openCreateModal() {
 				my_modal_3.showModal()
+			},
+
+			openGetValueModal() {
+				my_modal_5.showModal()
 			},
 
 			async openUpdateModal(id) {
@@ -237,6 +266,20 @@
 					return response.data;
 				} catch (err) {
 					console.error('Konfigürasyon alınamadı:', err);
+				}
+			},
+
+			async getValue() {
+				try {
+					const response = await axios.post('/Home/GetValue', {
+						mongoCstr: this.mongoCstr,
+						mongoDatabaseName: this.mongoDatabaseName,
+						...this.getValuePayload
+					});
+					alert(`Value: ${response.data ?? '-'}`)
+				} catch (err) {
+					console.error('Konfigürasyon alınamadı:', err);
+					alert(err.response.data)
 				}
 			},
 

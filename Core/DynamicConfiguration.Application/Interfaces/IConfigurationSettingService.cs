@@ -14,6 +14,8 @@ namespace DynamicConfiguration.Application.Interfaces
 
 		Task<List<ConfigurationSettingListByApplicationResponseDto>> ListByApplication(ConfigurationSettingListByApplicationRequestDto dto, CancellationToken cancellationToken);
 
+		Task RefreshListByApplication(ConfigurationSettingRefreshListByApplicationRequestDto dto, CancellationToken cancellationToken);
+
 		Task<ConfigurationSettingCreateResponseDto> Create(ConfigurationSettingCreateRequestDto dto, CancellationToken cancellationToken);
 
 		Task<ConfigurationSettingUpdateResponseDto> Update(ConfigurationSettingUpdateRequestDto dto, CancellationToken cancellationToken);
