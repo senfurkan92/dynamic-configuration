@@ -8,6 +8,11 @@ namespace DynamicConfiguration.Persistance.Repositories
 {
 	public class ConfigurationSettingMongoRepository(string connectionString, string databaseName) : MongoRepository<ConfigurationSetting>(connectionString, databaseName, "configurationSettings"), IConfigurationSettingMongoRepository
 	{
+		/// <summary>
+		/// list distinct application names
+		/// </summary>
+		/// <param name="cancellationToken"></param>
+		/// <returns></returns>
 		public async Task<List<string>> ListApplications(CancellationToken cancellationToken)
 		{
 			var applications = await _collection

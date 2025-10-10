@@ -24,6 +24,9 @@ namespace DynamicConfiguration.Domain.Entities
 		[BsonElement("applicationName")]
 		public string ApplicationName { get; set; } = null!;
 
+		/// <summary>
+		/// concurrency check
+		/// </summary>
 		[BsonElement("timeStamp")]
 		public long TimeStamp { get; set; }
 	}

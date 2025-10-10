@@ -21,6 +21,12 @@ namespace DynamicConfiguration.Persistance.RabbitMqService
 			};
 		}
 
+		/// <summary>
+		/// publishing message on configuration updating
+		/// </summary>
+		/// <param name="id"></param>
+		/// <param name="cancellationToken"></param>
+		/// <returns></returns>
 		public async Task Update(string id, CancellationToken cancellationToken)
 		{
 			var document = await _repository.Get(x => x.Id == id, cancellationToken);
@@ -34,6 +40,12 @@ namespace DynamicConfiguration.Persistance.RabbitMqService
 			await Publish(exhange, routingKey, body, cancellationToken);
 		}
 
+		/// <summary>
+		/// publishing message on configuration deleted
+		/// </summary>
+		/// <param name="id"></param>
+		/// <param name="cancellationToken"></param>
+		/// <returns></returns>
 		public async Task Delete(string id, CancellationToken cancellationToken)
 		{
 			var body = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(new { id }));

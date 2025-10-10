@@ -16,6 +16,12 @@ namespace DynamicConfiguration.Persistance.Repositories
 			_collection = database.GetCollection<T>(collectionName, null);
 		}
 
+		/// <summary>
+		/// get from db
+		/// </summary>
+		/// <param name="filter"></param>
+		/// <param name="cancellationToken"></param>
+		/// <returns></returns>
 		public async Task<T?> Get(Expression<Func<T, bool>> filter, CancellationToken cancellationToken)
 		{
 			var documents = await List(filter, cancellationToken);
@@ -23,6 +29,12 @@ namespace DynamicConfiguration.Persistance.Repositories
 			return documents.FirstOrDefault();
 		}
 
+		/// <summary>
+		/// list from db
+		/// </summary>
+		/// <param name="filter"></param>
+		/// <param name="cancellationToken"></param>
+		/// <returns></returns>
 		public async Task<List<T>> List(Expression<Func<T, bool>> filter, CancellationToken cancellationToken)
 		{
 			var documents = await _collection.FindAsync(filter, null, cancellationToken);
@@ -32,6 +44,12 @@ namespace DynamicConfiguration.Persistance.Repositories
 			return list;
 		}
 
+		/// <summary>
+		/// create on db
+		/// </summary>
+		/// <param name="document"></param>
+		/// <param name="cancellationToken"></param>
+		/// <returns></returns>
 		public async Task<T> Create(T document, CancellationToken cancellationToken)
 		{
 			await _collection.InsertOneAsync(document, null, cancellationToken);
@@ -39,6 +57,13 @@ namespace DynamicConfiguration.Persistance.Repositories
 			return document;
 		}
 
+		/// <summary>
+		/// update on db
+		/// </summary>
+		/// <param name="filter"></param>
+		/// <param name="document"></param>
+		/// <param name="cancellationToken"></param>
+		/// <returns></returns>
 		public async Task<T?> Update(Expression<Func<T, bool>> filter, T document, CancellationToken cancellationToken)
 		{
 			var current = await Get(filter, cancellationToken);
@@ -51,6 +76,12 @@ namespace DynamicConfiguration.Persistance.Repositories
 			return updated;
 		}
 
+		/// <summary>
+		/// delete from db
+		/// </summary>
+		/// <param name="filter"></param>
+		/// <param name="cancellationToken"></param>
+		/// <returns></returns>
 		public async Task Delete(Expression<Func<T, bool>> filter, CancellationToken cancellationToken)
 		{
 			var result = await _collection.DeleteOneAsync(filter, cancellationToken);

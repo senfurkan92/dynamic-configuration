@@ -31,6 +31,12 @@ namespace DynamicConfiguration.Persistance.Services
 			_rabbitMqService = new ConfigurationSettingRabbitMqService(mongoCstr, mongoDatabaseName, rabbitMqCstr);
 		}
 
+		/// <summary>
+		/// create on db
+		/// </summary>
+		/// <param name="dto"></param>
+		/// <param name="cancellationToken"></param>
+		/// <returns></returns>
 		public async Task<ConfigurationSettingCreateResponseDto> Create(ConfigurationSettingCreateRequestDto dto, CancellationToken cancellationToken)
 		{
 			ValidateValueType(dto.Value, dto.Type);
@@ -50,6 +56,13 @@ namespace DynamicConfiguration.Persistance.Services
 			return document.Adapt<ConfigurationSettingCreateResponseDto>();
 		}
 
+		/// <summary>
+		/// delete from db
+		/// remove from redis
+		/// </summary>
+		/// <param name="dto"></param>
+		/// <param name="cancellationToken"></param>
+		/// <returns></returns>
 		public async Task<ConfigurationSettingDeleteResponseDto> Delete(ConfigurationSettingDeleteRequestDto dto, CancellationToken cancellationToken)
 		{
 			var document = await _repository.Get(x => x.Id == dto.Id, cancellationToken);
@@ -66,6 +79,12 @@ namespace DynamicConfiguration.Persistance.Services
 			return new ConfigurationSettingDeleteResponseDto(dto.Id);
 		}
 
+		/// <summary>
+		/// get document from db
+		/// </summary>
+		/// <param name="dto"></param>
+		/// <param name="cancellationToken"></param>
+		/// <returns></returns>
 		public async Task<ConfigurationSettingGetResponseDto?> Get(ConfigurationSettingGetRequestDto dto, CancellationToken cancellationToken)
 		{
 			var document = await _repository.Get(x => x.Id == dto.Id, cancellationToken);
@@ -73,6 +92,12 @@ namespace DynamicConfiguration.Persistance.Services
 			return document.Adapt<ConfigurationSettingGetResponseDto>();
 		}
 
+		/// <summary>
+		/// get document from cache
+		/// </summary>
+		/// <param name="dto"></param>
+		/// <param name="cancellationToken"></param>
+		/// <returns></returns>
 		public async Task<ConfigurationSettingGetByNameResponseDto?> GetByName(ConfigurationSettingGetByNameRequestDto dto, CancellationToken cancellationToken)
 		{
 			var document = await _redisService.Get(_mongoCstr, _mongoDatabaseName, dto.Application, dto.Name, cancellationToken);
@@ -80,6 +105,11 @@ namespace DynamicConfiguration.Persistance.Services
 			return document;
 		}
 
+		/// <summary>
+		/// get application names from db
+		/// </summary>
+		/// <param name="cancellationToken"></param>
+		/// <returns></returns>
 		public async Task<List<ConfigurationSettingListApplicationResponseDto>> ListApplications(CancellationToken cancellationToken)
 		{
 			var data = await _repository.ListApplications(cancellationToken);
@@ -87,6 +117,11 @@ namespace DynamicConfiguration.Persistance.Services
 			return data.Select(x => new ConfigurationSettingListApplicationResponseDto(x)).ToList();
 		}
 
+		/// <summary>
+		/// get documents from db
+		/// </summary>
+		/// <param name="cancellationToken"></param>
+		/// <returns></returns>
 		public async Task<List<ConfigurationSettingListResponseDto>> List(CancellationToken cancellationToken)
 		{
 			var documents = await _repository.List(x => true, cancellationToken);
@@ -94,6 +129,12 @@ namespace DynamicConfiguration.Persistance.Services
 			return documents?.ToList().Adapt<List<ConfigurationSettingListResponseDto>>() ?? new();
 		}
 
+		/// <summary>
+		/// get configs from redis by application
+		/// </summary>
+		/// <param name="dto"></param>
+		/// <param name="cancellationToken"></>
+		/// <returns></returns>param
 		public async Task<List<ConfigurationSettingListByApplicationResponseDto>> ListByApplication(ConfigurationSettingListByApplicationRequestDto dto, CancellationToken cancellationToken)
 		{
 			var documents = await _redisService.ListByApplication(_mongoCstr, _mongoDatabaseName, dto.ApplicationName, cancellationToken);
@@ -101,11 +142,24 @@ namespace DynamicConfiguration.Persistance.Services
 			return documents;
 		}
 
+		/// <summary>
+		/// refresh configs on redis by application
+		/// </summary>
+		/// <param name="dto"></param>
+		/// <param name="cancellationToken"></param>
+		/// <returns></returns>
 		public async Task RefreshListByApplication(ConfigurationSettingRefreshListByApplicationRequestDto dto, CancellationToken cancellationToken)
 		{
 			await _redisService.RefreshListByApplication(_mongoCstr, _mongoDatabaseName, dto.ApplicationName, cancellationToken);
 		}
 
+		/// <summary>
+		/// update on db
+		/// remove from redis
+		/// </summary>
+		/// <param name="dto"></param>
+		/// <param name="cancellationToken"></param>
+		/// <returns></returns>
 		public async Task<ConfigurationSettingUpdateResponseDto> Update(ConfigurationSettingUpdateRequestDto dto, CancellationToken cancellationToken)
 		{
 			ValidateValueType(dto.Value, dto.Type);

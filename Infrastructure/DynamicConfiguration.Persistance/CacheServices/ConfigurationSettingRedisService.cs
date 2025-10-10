@@ -23,6 +23,15 @@ namespace DynamicConfiguration.Persistance.CacheServices
 			_redis = connectionMultiplexer.GetDatabase(0);
 		}
 
+		/// <summary>
+		/// get cached data
+		/// </summary>
+		/// <param name="cstr"></param>
+		/// <param name="dbName"></param>
+		/// <param name="application"></param>
+		/// <param name="name"></param>
+		/// <param name="cancellationToken"></param>
+		/// <returns></returns>
 		public async Task<ConfigurationSettingGetByNameResponseDto?> Get(string cstr, string dbName, string application, string name, CancellationToken cancellationToken)
 		{
 			var key = GetKey(cstr, dbName, application, name);
@@ -45,23 +54,15 @@ namespace DynamicConfiguration.Persistance.CacheServices
 			return dto;
 		}
 
-		public async Task Update(string cstr, string dbName, string application, string name, CancellationToken cancellationToken)
-		{
-			var key = GetKey(cstr, dbName, application, name);
-
-			var document = await _repository.Get(x => x.ApplicationName == application
-					&& x.Name == name
-					&& x.IsActive,
-				cancellationToken);
-
-			if (document == null) return;
-
-			var dto = document?.Adapt<ConfigurationSettingGetByNameResponseDto>();
-
-			if (dto != null)
-				await _redis.StringSetAsync(key, JsonConvert.SerializeObject(dto));
-		}
-
+		/// <summary>
+		/// remove cached data on update/delete
+		/// </summary>
+		/// <param name="cstr"></param>
+		/// <param name="dbName"></param>
+		/// <param name="application"></param>
+		/// <param name="name"></param>
+		/// <param name="cancellationToken"></param>
+		/// <returns></returns>
 		public async Task Remove(string cstr, string dbName, string application, string name, CancellationToken cancellationToken)
 		{
 			var key = GetKey(cstr, dbName, application, name);
@@ -69,6 +70,14 @@ namespace DynamicConfiguration.Persistance.CacheServices
 			await _redis.KeyDeleteAsync(key);
 		}
 
+		/// <summary>
+		/// list configs by application name
+		/// </summary>
+		/// <param name="cstr"></param>
+		/// <param name="dbName"></param>
+		/// <param name="application"></param>
+		/// <param name="cancellationToken"></param>
+		/// <returns></returns>
 		public async Task<List<ConfigurationSettingListByApplicationResponseDto>> ListByApplication(string cstr, string dbName, string application, CancellationToken cancellationToken)
 		{
 			var key = GetListByApplication(cstr, dbName, application);
@@ -87,6 +96,14 @@ namespace DynamicConfiguration.Persistance.CacheServices
 			return dto;
 		}
 
+		/// <summary>
+		/// refresh configs by application name
+		/// </summary>
+		/// <param name="cstr"></param>
+		/// <param name="dbName"></param>
+		/// <param name="application"></param>
+		/// <param name="cancellationToken"></param>
+		/// <returns></returns>
 		public async Task RefreshListByApplication(string cstr, string dbName, string application, CancellationToken cancellationToken)
 		{
 			var key = GetListByApplication(cstr, dbName, application);
@@ -98,10 +115,31 @@ namespace DynamicConfiguration.Persistance.CacheServices
 			await _redis.StringSetAsync(key, JsonConvert.SerializeObject(dto));
 		}
 
+		/// <summary>
+		/// get key
+		/// </summary>
+		/// <param name="cstr"></param>
+		/// <param name="dbName"></param>
+		/// <param name="application"></param>
+		/// <param name="name"></param>
+		/// <returns></returns>
 		private string GetKey(string cstr, string dbName, string application, string name) => $"{nameof(ConfigurationSetting)}.{ComputeHash(cstr, dbName)}.{application}.{name}";
 
+		/// <summary>
+		/// get key
+		/// </summary>
+		/// <param name="cstr"></param>
+		/// <param name="dbName"></param>
+		/// <param name="application"></param>
+		/// <returns></returns>
 		private string GetListByApplication(string cstr, string dbName, string application) => $"{nameof(ConfigurationSetting)}.{ComputeHash(cstr, dbName)}.{application}";
 
+		/// <summary>
+		/// get hashed for key
+		/// </summary>
+		/// <param name="cstr"></param>
+		/// <param name="dbName"></param>
+		/// <returns></returns>
 		private string ComputeHash(string cstr, string dbName)
 		{
 			using var sha = SHA256.Create();
