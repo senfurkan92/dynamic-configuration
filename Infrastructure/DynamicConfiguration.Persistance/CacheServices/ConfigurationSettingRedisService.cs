@@ -5,6 +5,8 @@ using DynamicConfiguration.Persistance.Repositories;
 using Mapster;
 using Newtonsoft.Json;
 using StackExchange.Redis;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace DynamicConfiguration.Persistance.CacheServices
 {
@@ -21,9 +23,9 @@ namespace DynamicConfiguration.Persistance.CacheServices
 			_redis = connectionMultiplexer.GetDatabase(0);
 		}
 
-		public async Task<ConfigurationSettingGetByNameResponseDto?> Get(string application, string name, CancellationToken cancellationToken)
+		public async Task<ConfigurationSettingGetByNameResponseDto?> Get(string cstr, string dbName, string application, string name, CancellationToken cancellationToken)
 		{
-			var key = GetKey(application, name);
+			var key = GetKey(cstr, dbName, application, name);
 
 			var cached = await _redis.StringGetAsync(key);
 
@@ -43,41 +45,39 @@ namespace DynamicConfiguration.Persistance.CacheServices
 			return dto;
 		}
 
-		public async Task Remove(string application, string name, CancellationToken cancellationToken)
+		public async Task Update(string cstr, string dbName, string application, string name, CancellationToken cancellationToken)
 		{
-			var key = GetKey(application, name);
+			var key = GetKey(cstr, dbName, application, name);
 
-			await _redis.KeyDeleteAsync(key);
-		}
+			var document = await _repository.Get(x => x.ApplicationName == application
+					&& x.Name == name
+					&& x.IsActive,
+				cancellationToken);
 
-		public async Task<List<ConfigurationSettingListByApplicationResponseDto>> ListByApplication(string application, CancellationToken cancellationToken)
-		{
-			var key = ListByApplicationKey(application);
+			if (document == null) return;
 
-			var cached = await _redis.StringGetAsync(key);
-
-			if (cached.HasValue)
-				return JsonConvert.DeserializeObject<List<ConfigurationSettingListByApplicationResponseDto>>(cached.ToString()) ?? new();
-
-			var document = await _repository.List(x => x.ApplicationName == application && x.IsActive, cancellationToken);
-
-			var dto = document?.Adapt<List<ConfigurationSettingListByApplicationResponseDto>>();
+			var dto = document?.Adapt<ConfigurationSettingGetByNameResponseDto>();
 
 			if (dto != null)
 				await _redis.StringSetAsync(key, JsonConvert.SerializeObject(dto));
-
-			return dto ?? new();
 		}
 
-		public async Task RemoveListByApplication(string application, CancellationToken cancellationToken)
+		public async Task Remove(string cstr, string dbName, string application, string name, CancellationToken cancellationToken)
 		{
-			var key = ListByApplicationKey(application);
+			var key = GetKey(cstr, dbName, application, name);
 
 			await _redis.KeyDeleteAsync(key);
 		}
 
-		private string GetKey(string application, string name) => $"{nameof(ConfigurationSetting)}.{application}.{name}";
+		private string GetKey(string cstr, string dbName, string application, string name) => $"{nameof(ConfigurationSetting)}.{ComputeHash(cstr, dbName)}.{application}.{name}";
 
-		private string ListByApplicationKey(string application) => $"{nameof(ConfigurationSetting)}.list:{application}";
+		private string ComputeHash(string cstr, string dbName)
+		{
+			using var sha = SHA256.Create();
+			var inputBytes = Encoding.UTF8.GetBytes($"{cstr}|{dbName}");
+			var hashBytes = sha.ComputeHash(inputBytes);
+
+			return BitConverter.ToString(hashBytes).Replace("-", "").ToLower();
+		}
 	}
 }

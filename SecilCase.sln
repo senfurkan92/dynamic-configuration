@@ -19,6 +19,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DynamicConfiguration.WebUI"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DynamicConfiguration.Lib", "Presentation\DynamicConfiguration.Lib\DynamicConfiguration.Lib.csproj", "{64B2D048-F21E-446D-86B6-76EDB17C1A7D}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Test", "Test", "{FB1159A8-14B6-4CF3-9C15-82088026422B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DynamicConfiguration.Test.Lib", "Test\DynamicConfiguration.Test.Lib\DynamicConfiguration.Test.Lib.csproj", "{4CC8EFE1-4DF9-497C-A6FD-1E0DC6CA53FC}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -45,6 +49,10 @@ Global
 		{64B2D048-F21E-446D-86B6-76EDB17C1A7D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{64B2D048-F21E-446D-86B6-76EDB17C1A7D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{64B2D048-F21E-446D-86B6-76EDB17C1A7D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4CC8EFE1-4DF9-497C-A6FD-1E0DC6CA53FC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4CC8EFE1-4DF9-497C-A6FD-1E0DC6CA53FC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4CC8EFE1-4DF9-497C-A6FD-1E0DC6CA53FC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4CC8EFE1-4DF9-497C-A6FD-1E0DC6CA53FC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -55,6 +63,7 @@ Global
 		{248D1FD0-3FDF-4450-BFDB-2E1A6CD28786} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 		{9880405D-1B1D-435A-9D71-58ECF341322C} = {8EADAAA2-19F0-44A6-A18F-FA0BB3931093}
 		{64B2D048-F21E-446D-86B6-76EDB17C1A7D} = {8EADAAA2-19F0-44A6-A18F-FA0BB3931093}
+		{4CC8EFE1-4DF9-497C-A6FD-1E0DC6CA53FC} = {FB1159A8-14B6-4CF3-9C15-82088026422B}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {6F429CD0-5696-4837-9F51-3ED59F4D06E1}

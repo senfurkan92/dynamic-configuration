@@ -1,17 +1,300 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+	ViewData["Title"] = "Home Page";
 }
 
-<div id="app">{{ message }}</div>
+<div id="app">
+	<div class="grid grid-cols-12">
+		<div class="col-span-12 text-center">
+			<h3 class="text-2xl font-bold">Configuration Settings</h3>
+		</div>
+		<div class="col-span-12 mt-2">
+			<div class="card shadow-sm">
+				<div class="card-body">
+					<div class="flex align-items-center gap-3">
+						<input v-model="mongoCstr" type="text" placeholder="Connection String" class="input" />
+						<input v-model="mongoDatabaseName" type="text" placeholder="Database Name" class="input" />
+						<button v-on:click="connect" class="btn btn-success">Connect</button>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="col-span-12 mt-2" v-if="isConnected">
+			<div class="card shadow-sm">
+				<div class="card-body">
+					<div class="text-end">
+						<button class="btn btn-secondary" v-on:click="openCreateModal">Add</button>
+					</div>
+					<table class="table">
+						<thead>
+							<tr>
+								<th>Id</th>
+								<th>Name</th>
+								<th>Type</th>
+								<th>Value</th>
+								<th>Active</th>
+								<th>Application</th>
+								<th>#</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr v-if="!configurations.length">
+								<td colspan="7">
+									Any configuration not exists.
+								</td>
+							</tr>
+							<tr v-else v-for="c,i in configurations" :key="i">
+								<td>
+									{{c.id}}
+								</td>
+								<td>
+									{{c.name}}
+								</td>
+								<td>
+									{{c.type}}
+								</td>
+								<td>
+									{{c.value}}
+								</td>
+								<td>
+									{{c.isActive}}
+								</td>
+								<td>
+									{{c.applicationName}}
+								</td>
+								<td>
+									<button class="btn btn-warning me-2" v-on:click="openUpdateModal(c.id)">Update</button>
+									<button class="btn btn-error" v-on:click="deleteConfiGurationSetting(c.id)">Delete</button>
+								</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<dialog id="my_modal_3" class="modal">
+		<div class="modal-box">
+			<form method="dialog">
+				<button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+			</form>
+			<h3 class="text-lg font-bold">New Configuration</h3>
+			<div class="flex gap-1 flex-col">
+				<fieldset class="fieldset">
+					<legend class="fieldset-legend">Name</legend>
+					<input v-model="createConfigurationPayload.name" type="text" class="input" placeholder="Name" />
+				</fieldset>
+				<fieldset class="fieldset">
+					<legend class="fieldset-legend">Type</legend>
+					<select v-model="createConfigurationPayload.type" class="select">
+						<option :value="'Int32'">int</option>
+						<option :value="'Decimal'">decimal</option>
+						<option :value="'String'">string</option>
+						<option :value="'Boolean'">bool</option>
+					</select>
+				</fieldset>
+				<fieldset class="fieldset">
+					<legend class="fieldset-legend">Value</legend>
+					<input v-model="createConfigurationPayload.value" type="text" class="input" placeholder="Value" />
+				</fieldset>
+				<fieldset class="fieldset">
+					<legend class="fieldset-legend">Application Name</legend>
+					<input v-model="createConfigurationPayload.applicationName" type="text" class="input" placeholder="Application Name" />
+				</fieldset>
+				<button class="btn mt-2" v-on:click="createConfiGurationSetting">Add</button>
+			</div>
+		</div>
+	</dialog>
+
+	<dialog id="my_modal_4" class="modal">
+		<div class="modal-box">
+			<form method="dialog">
+				<button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+			</form>
+			<h3 class="text-lg font-bold">Update Configuration</h3>
+			<div class="flex gap-1 flex-col">
+				<fieldset class="fieldset">
+					<legend class="fieldset-legend">Id</legend>
+					<input readonly v-model="updateConfigurationPayload.id" type="text" class="input" placeholder="Id" />
+				</fieldset>
+				<fieldset class="fieldset">
+					<legend class="fieldset-legend">Name</legend>
+					<input v-model="updateConfigurationPayload.name" type="text" class="input" placeholder="Name" />
+				</fieldset>
+				<fieldset class="fieldset">
+					<legend class="fieldset-legend">Type</legend>
+					<select v-model="updateConfigurationPayload.type" class="select">
+						<option :value="'Int32'">int</option>
+						<option :value="'Decimal'">decimal</option>
+						<option :value="'String'">string</option>
+						<option :value="'Boolean'">bool</option>
+					</select>
+				</fieldset>
+				<fieldset class="fieldset">
+					<legend class="fieldset-legend">Value</legend>
+					<input v-model="updateConfigurationPayload.value" type="text" class="input" placeholder="Value" />
+				</fieldset>
+				<fieldset class="fieldset">
+					<legend class="fieldset-legend">Application Name</legend>
+					<input readonly v-model="updateConfigurationPayload.applicationName" type="text" class="input" placeholder="Application Name" />
+				</fieldset>
+				<fieldset class="fieldset bg-base-100 w-64 mt-2">
+					<label class="label">
+						<input v-model="updateConfigurationPayload.isActive" type="checkbox" class="checkbox" />
+						Active
+					</label>
+				</fieldset>
+				<button class="btn mt-2" v-on:click="updateConfiGurationSetting">Update</button>
+			</div>
+		</div>
+	</dialog>
+</div>
 
 <script>
-    const { createApp } = Vue
+	const { createApp } = Vue
 
-    createApp({
-      data() {
-        return {
-          message: 'Hello Vue!'
-        }
-      }
-    }).mount('#app')
+	createApp({
+		data() {
+			return {
+				mongoCstr: "mongodb://root:root@localhost:27017",
+				mongoDatabaseName: "configurationSettingsDb",
+				configurations: [],
+				isConnected: false,
+				createConfigurationPayload: {
+					name: null,
+					type: null,
+					value: null,
+					isActive: true,
+					applicationName: null
+				},
+				updateConfigurationPayload: {
+					id: null,
+					name: null,
+					type: null,
+					value: null,
+					isActive: null,
+					timeStamp: null,
+					applicationName: null
+				}
+			}
+		},
+		methods: {
+			openCreateModal() {
+				my_modal_3.showModal()
+			},
+
+			async openUpdateModal(id) {
+				let doc = await this.getConfiGurationSetting(id)
+
+				this.updateConfigurationPayload = {
+					id: doc.id,
+					name: doc.name,
+					type: doc.type,
+					value: doc.value,
+					isActive: doc.isActive,
+					timeStamp: doc.timeStamp,
+					applicationName: doc.applicationName
+				}
+
+				my_modal_4.showModal()
+			},
+
+			async connect() {
+				await this.listConfigurationSettings(true)
+			},
+
+			async listConfigurationSettings(showAlert) {
+				this.configurations = []
+				this.isConnected = false
+
+				try {
+					const response = await axios.post('/Home/ListConfigurationSettings', {
+						mongoCstr: this.mongoCstr,
+						mongoDatabaseName: this.mongoDatabaseName,
+						applicationName: null
+					});
+					this.configurations = response.data;
+					console.log(response.data)
+
+					if (showAlert) {
+						alert("Bağlandı")
+					}
+
+					this.isConnected = true
+				} catch (err) {
+					console.error('Konfigürasyonlar alınamadı:', err);
+					alert("Bağlanamadı")
+				}
+			},
+
+			async getConfiGurationSetting(id) {
+				try {
+					const response = await axios.post('/Home/GetConfiGurationSetting', {
+						mongoCstr: this.mongoCstr,
+						mongoDatabaseName: this.mongoDatabaseName,
+						id
+					});
+					return response.data;
+				} catch (err) {
+					console.error('Konfigürasyon alınamadı:', err);
+				}
+			},
+
+			async createConfiGurationSetting() {
+				try {
+					const response = await axios.post('/Home/CreateConfiGurationSetting', {
+						...this.createConfigurationPayload,
+						mongoCstr: this.mongoCstr,
+						mongoDatabaseName: this.mongoDatabaseName
+					});
+					alert('Kayıt eklendi!');
+					console.log(response.data);
+					this.listConfigurationSettings();
+				} catch (err) {
+					console.error('Kayıt eklenemedi:', err);
+					alert(err.response.data)
+				}
+			},
+
+			async updateConfiGurationSetting() {
+				try {
+					const response = await axios.post('/Home/UpdateConfiGurationSetting', {
+						...this.updateConfigurationPayload,
+						mongoCstr: this.mongoCstr,
+						mongoDatabaseName: this.mongoDatabaseName
+					});
+					alert('Kayıt güncellendi!');
+					console.log(response.data);
+					this.listConfigurationSettings();
+				} catch (err) {
+					console.error('Kayıt güncellenemedi:', err);
+					alert(err.response.data)
+				}
+			},
+
+			async deleteConfiGurationSetting(id) {
+				try {
+					const response = await axios.post('/Home/DeleteConfiGurationSetting', {
+						mongoCstr: this.mongoCstr,
+						mongoDatabaseName: this.mongoDatabaseName,
+						id
+					});
+					alert('Kayıt silindi!');
+					console.log(response.data);
+					this.listConfigurationSettings();
+				} catch (err) {
+					console.error('Kayıt silinemedi:', err);
+				}
+			},
+		},
+		watch: {
+			applicationName(v, old) {
+				if (v) {
+					this.listConfigurationSettings()
+				} else {
+					this.configurations = []
+				}
+			}
+		}
+	}).mount('#app')
 </script>

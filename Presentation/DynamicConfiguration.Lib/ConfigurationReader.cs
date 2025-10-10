@@ -17,6 +17,18 @@ namespace DynamicConfiguration.Lib
 			_applicationName = applicationName;
 		}
 
+		public async Task<object?> GetValue(string key, CancellationToken cancellationToken = default)
+		{
+			var stringValue = await _service.GetByName(new ConfigurationSettingGetByNameRequestDto(_applicationName, key), cancellationToken);
+
+			if (stringValue == null)
+				return default;
+
+			var targetType = GetTypeFromString(stringValue.Type);
+
+			return ConvertToType(stringValue.Value, targetType);
+		}
+
 		public async Task<T?> GetValue<T>(string key, CancellationToken cancellationToken = default)
 		{
 			var stringValue = await _service.GetByName(new ConfigurationSettingGetByNameRequestDto(_applicationName, key), cancellationToken);
@@ -53,5 +65,15 @@ namespace DynamicConfiguration.Lib
 				throw new InvalidCastException($"Cannot convert '{value}' to {targetType.Name}");
 			}
 		}
+
+		private Type GetTypeFromString(string typeName) => typeName switch
+		{
+			"String" => typeof(string),
+			"Boolean" => typeof(bool),
+			"Int32" => typeof(int),
+			"Double" => typeof(double),
+			"Decimal" => typeof(decimal),
+			_ => throw new NotSupportedException($"Type '{typeName}' is not supported")
+		};
 	}
 }

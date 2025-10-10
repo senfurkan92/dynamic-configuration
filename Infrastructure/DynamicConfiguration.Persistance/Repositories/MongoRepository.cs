@@ -23,11 +23,13 @@ namespace DynamicConfiguration.Persistance.Repositories
 			return documents.FirstOrDefault();
 		}
 
-		public async Task<IEnumerable<T>> List(Expression<Func<T, bool>> filter, CancellationToken cancellationToken)
+		public async Task<List<T>> List(Expression<Func<T, bool>> filter, CancellationToken cancellationToken)
 		{
 			var documents = await _collection.FindAsync(filter, null, cancellationToken);
 
-			return documents.ToEnumerable();
+			var list = await documents.ToListAsync();
+
+			return list;
 		}
 
 		public async Task<T> Create(T document, CancellationToken cancellationToken)
