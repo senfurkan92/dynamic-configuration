@@ -13,7 +13,9 @@
 					<div class="flex align-items-center gap-3">
 						<input v-model="mongoCstr" type="text" placeholder="Connection String" class="input" />
 						<input v-model="mongoDatabaseName" type="text" placeholder="Database Name" class="input" />
-						<button v-on:click="connect" class="btn btn-success">Connect</button>
+                        <button v-on:click="connect" class="btn btn-success">
+                            <i class="fas fa-plug me-2"></i> Connect
+                        </button>
 					</div>
 				</div>
 			</div>
@@ -21,10 +23,15 @@
 		<div class="col-span-12 mt-2" v-if="isConnected">
 			<div class="card bg-base-200 shadow-sm">
 				<div class="card-body">
-					<div class="text-end">
-						<button class="btn btn-secondary me-4" v-on:click="openCreateModal">Add</button>
-						<button class="btn btn-primary" v-on:click="openGetValueModal">Get Value</button>
-					</div>
+                    <div class="text-end">
+                        <input v-model="search" type="text" placeholder="Search..." class="input me-3" />
+                        <button class="btn btn-secondary me-3" v-on:click="openCreateModal">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                        <button class="btn btn-primary" v-on:click="openGetValueModal">
+                            <i class="fas fa-eye"></i> Show Value
+						</button>
+                    </div>
 					<table class="table">
 						<thead>
 							<tr>
@@ -38,12 +45,12 @@
 							</tr>
 						</thead>
 						<tbody>
-							<tr v-if="!configurations.length">
-								<td colspan="7">
-									Any configuration not exists.
+							<tr v-if="!searchedList.length">
+								<td colspan="7" class="text-center">
+                                    <b>Any configuration not exists.</b>
 								</td>
 							</tr>
-							<tr v-else v-for="c,i in configurations" :key="i">
+							<tr v-else v-for="c,i in searchedList" :key="i">
 								<td>
 									{{c.id}}
 								</td>
@@ -56,15 +63,20 @@
 								<td>
 									{{c.value}}
 								</td>
-								<td>
-									{{c.isActive}}
-								</td>
+                                <td>
+                                    <div v-if="c.isActive" class="badge badge-soft badge-success">Active</div>
+                                    <div v-else class="badge badge-soft badge-error">Passive</div>
+                                </td>
 								<td>
 									{{c.applicationName}}
 								</td>
 								<td>
-									<button class="btn btn-warning me-2" v-on:click="openUpdateModal(c.id)">Update</button>
-									<button class="btn btn-error" v-on:click="deleteConfiGurationSetting(c.id)">Delete</button>
+                                    <button class="btn btn-warning me-2" v-on:click="openUpdateModal(c.id)">
+                                        <i class="fas fa-pen"></i>
+                                    </button>
+                                    <button class="btn btn-error" v-on:click="deleteConfiGurationSetting(c.id)">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
 								</td>
 							</tr>
 						</tbody>
@@ -177,10 +189,11 @@
 	createApp({
 		data() {
 			return {
-				mongoCstr: "@(Environment.GetEnvironmentVariable("MONGODB_CONNECTION_STRING") ?? "mongodb://root:root@localhost:27017")",
+				mongoCstr: "@(Environment.GetEnvironmentVariable("MONGODB_CONNECTION_STRING") ?? "mongodb://root:root@localhost:27019")",
 				mongoDatabaseName: "configurationSettingsDb",
 				configurations: [],
 				isConnected: false,
+				search: "",
 				createConfigurationPayload: {
 					name: null,
 					type: null,
@@ -337,6 +350,24 @@
 				} else {
 					this.configurations = []
 				}
+			}
+		},
+		computed: {
+			searchedList() {
+				if (!this.configurations) return []
+
+				if (!this.search) return this.configurations			
+				
+                const search = this.search.toLowerCase();
+
+                return this.configurations.filter(x =>
+                    x.id.toLowerCase().includes(search) ||
+                    x.name.toLowerCase().includes(search) ||
+                    x.type.toLowerCase().includes(search) ||
+                    x.value.toLowerCase().includes(search) ||
+                    ((x.isActive ? "active" : "passive") + "").toLowerCase().includes(search) ||
+                    x.applicationName.toLowerCase().includes(search)
+                );		
 			}
 		}
 	}).mount('#app')

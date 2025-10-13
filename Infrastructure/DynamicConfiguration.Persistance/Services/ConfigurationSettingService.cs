@@ -21,8 +21,8 @@ namespace DynamicConfiguration.Persistance.Services
 		private readonly string _mongoDatabaseName;
 		public ConfigurationSettingService(string mongoCstr, string mongoDatabaseName)
 		{
-			var redisCstr = Environment.GetEnvironmentVariable("REDIS_CONNECTION_STRING") ?? "localhost:6379";
-			var rabbitMqCstr = Environment.GetEnvironmentVariable("RABBITMQ_CONNECTION_STRING") ?? "amqp://guest:guest@localhost:5672/";
+			var redisCstr = Environment.GetEnvironmentVariable("REDIS_CONNECTION_STRING") ?? "localhost:6381";
+			var rabbitMqCstr = Environment.GetEnvironmentVariable("RABBITMQ_CONNECTION_STRING") ?? "amqp://guest:guest@localhost:5674/";
 
 			_mongoCstr = mongoCstr;
 			_mongoDatabaseName = mongoDatabaseName;
