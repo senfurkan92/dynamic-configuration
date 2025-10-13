@@ -6,76 +6,76 @@ using System.Text;
 
 namespace DynamicConfiguration.Persistance.RabbitMqService
 {
-	public class ConfigurationSettingRabbitMqService : IConfigurationSettingRabbitMqService
-	{
-		private readonly IConfigurationSettingMongoRepository _repository;
-		private readonly ConnectionFactory _factory;
+    public class ConfigurationSettingRabbitMqService : IConfigurationSettingRabbitMqService
+    {
+        private readonly IConfigurationSettingMongoRepository _repository;
+        private readonly ConnectionFactory _factory;
 
-		public ConfigurationSettingRabbitMqService(string mongoCstr, string mongoDatabaseName, string rabbitMqCstr)
-		{
-			_repository = new ConfigurationSettingMongoRepository(mongoCstr, mongoDatabaseName);
+        public ConfigurationSettingRabbitMqService(string mongoCstr, string mongoDatabaseName, string rabbitMqCstr)
+        {
+            _repository = new ConfigurationSettingMongoRepository(mongoCstr, mongoDatabaseName);
 
-			_factory = new ConnectionFactory
-			{
-				Uri = new Uri(rabbitMqCstr)
-			};
-		}
+            _factory = new ConnectionFactory
+            {
+                Uri = new Uri(rabbitMqCstr)
+            };
+        }
 
-		/// <summary>
-		/// publishing message on configuration updating
-		/// </summary>
-		/// <param name="id"></param>
-		/// <param name="cancellationToken"></param>
-		/// <returns></returns>
-		public async Task Update(string id, CancellationToken cancellationToken)
-		{
-			var document = await _repository.Get(x => x.Id == id, cancellationToken);
+        /// <summary>
+        /// publishing message on configuration updating
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public async Task Update(string id, CancellationToken cancellationToken)
+        {
+            var document = await _repository.Get(x => x.Id == id, cancellationToken);
 
-			if (document == null) return;
+            if (document == null) return;
 
-			var body = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(document));
-			var exhange = "configuration.exchange";
-			var routingKey = "configuration.update";
+            var body = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(document));
+            var exhange = "configuration.exchange";
+            var routingKey = "configuration.update";
 
-			await Publish(exhange, routingKey, body, cancellationToken);
-		}
+            await Publish(exhange, routingKey, body, cancellationToken);
+        }
 
-		/// <summary>
-		/// publishing message on configuration deleted
-		/// </summary>
-		/// <param name="id"></param>
-		/// <param name="cancellationToken"></param>
-		/// <returns></returns>
-		public async Task Delete(string id, CancellationToken cancellationToken)
-		{
-			var body = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(new { id }));
-			var exhange = "configuration.exchange";
-			var routingKey = "configuration.update";
+        /// <summary>
+        /// publishing message on configuration deleted
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public async Task Delete(string id, CancellationToken cancellationToken)
+        {
+            var body = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(new { id }));
+            var exhange = "configuration.exchange";
+            var routingKey = "configuration.update";
 
-			await Publish(exhange, routingKey, body, cancellationToken);
-		}
+            await Publish(exhange, routingKey, body, cancellationToken);
+        }
 
-		private async Task Publish(string exhange, string routingKey, byte[] body, CancellationToken cancellationToken)
-		{
-			using var conn = await _factory.CreateConnectionAsync(cancellationToken);
+        private async Task Publish(string exhange, string routingKey, byte[] body, CancellationToken cancellationToken)
+        {
+            using var conn = await _factory.CreateConnectionAsync(cancellationToken);
 
-			using var channel = await conn.CreateChannelAsync();
+            using var channel = await conn.CreateChannelAsync();
 
-			await channel.ExchangeDeclareAsync(exchange: exhange, type: ExchangeType.Topic, durable: true);
+            await channel.ExchangeDeclareAsync(exchange: exhange, type: ExchangeType.Topic, durable: true);
 
-			var props = new BasicProperties
-			{
-				ContentType = "application/json"
-			};
+            var props = new BasicProperties
+            {
+                ContentType = "application/json"
+            };
 
-			await channel.BasicPublishAsync(
-				exhange,
-				routingKey,
-				false,
-				props,
-				body,
-				cancellationToken
-			);
-		}
-	}
+            await channel.BasicPublishAsync(
+                exhange,
+                routingKey,
+                false,
+                props,
+                body,
+                cancellationToken
+            );
+        }
+    }
 }

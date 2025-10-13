@@ -1,9 +1,9 @@
 ﻿namespace DynamicConfiguration.WebUI.Models
 {
-	public record ConfigurationSettingGetValueRequest(
-			string MongoCstr, 
-			string MongoDatabaseName,
-			string ApplicationName,
-			string Name
-		);
+    public record ConfigurationSettingGetValueRequest(
+            string MongoCstr,
+            string MongoDatabaseName,
+            string ApplicationName,
+            string Name
+        );
 }

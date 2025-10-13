@@ -1,6 +1,6 @@
 ﻿namespace DynamicConfiguration.Application.Dtos.ConfigurationSettingDtos
 {
-	public record ConfigurationSettingGetRequestDto(
-			string Id
-		);
+    public record ConfigurationSettingGetRequestDto(
+            string Id
+        );
 }

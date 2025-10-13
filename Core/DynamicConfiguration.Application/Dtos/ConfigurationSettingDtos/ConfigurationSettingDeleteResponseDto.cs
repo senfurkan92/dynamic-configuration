@@ -1,7 +1,6 @@
 ﻿namespace DynamicConfiguration.Application.Dtos.ConfigurationSettingDtos
 {
-	public record ConfigurationSettingDeleteResponseDto(
-			string Id
-		);
+    public record ConfigurationSettingDeleteResponseDto(
+            string Id
+        );
 }
- 

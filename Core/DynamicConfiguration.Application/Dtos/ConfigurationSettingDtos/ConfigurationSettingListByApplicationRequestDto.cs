@@ -1,6 +1,6 @@
 ﻿namespace DynamicConfiguration.Application.Dtos.ConfigurationSettingDtos
 {
-	public record ConfigurationSettingListByApplicationRequestDto(
-			string ApplicationName
-		);
+    public record ConfigurationSettingListByApplicationRequestDto(
+            string ApplicationName
+        );
 }
