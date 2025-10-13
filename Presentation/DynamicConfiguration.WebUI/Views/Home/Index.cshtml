@@ -189,7 +189,7 @@
 	createApp({
 		data() {
 			return {
-				mongoCstr: "@(Environment.GetEnvironmentVariable("MONGODB_CONNECTION_STRING") ?? "mongodb://root:root@localhost:27019")",
+				mongoCstr: "@(Environment.GetEnvironmentVariable("MONGODB_CONNECTION_STRING") ?? "mongodb://root:root@localhost:27017")",
 				mongoDatabaseName: "configurationSettingsDb",
 				configurations: [],
 				isConnected: false,

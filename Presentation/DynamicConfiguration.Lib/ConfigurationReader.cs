@@ -10,7 +10,7 @@ namespace DynamicConfiguration.Lib
         private readonly IConfigurationSettingService _service;
         private readonly string _applicationName;
         private List<ConfigurationSettingListByApplicationResponseDto> _config = new();
-        private readonly System.Timers.Timer _timer;
+        private readonly System.Timers.Timer? _timer;
 
         public ConfigurationReader(string applicationName, string connectionString, string databaseName, int refreshIntervalMs)
         {
@@ -20,10 +20,12 @@ namespace DynamicConfiguration.Lib
 
             LoadConfiguration();
 
-            _timer = new System.Timers.Timer(refreshIntervalMs);
-            _timer.Elapsed += async (sender, e) => await RefreshConfiguration();
-            _timer.AutoReset = true;
-            _timer.Start();
+            if (refreshIntervalMs > 0) { 
+                _timer = new System.Timers.Timer(refreshIntervalMs);
+                _timer.Elapsed += async (sender, e) => await RefreshConfiguration();
+                _timer.AutoReset = true;
+                _timer.Start();     
+            }
         }
 
         public object? GetValue(string key, CancellationToken cancellationToken = default)

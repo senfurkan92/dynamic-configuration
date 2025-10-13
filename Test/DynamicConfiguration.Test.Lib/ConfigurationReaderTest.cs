@@ -7,13 +7,14 @@ namespace DynamicConfiguration.Test.Lib
 {
     public class ConfigurationReaderTest
     {
+        const string MongoCstr = "mongodb://root:root@localhost:27017";
+
         [Fact]
         public async Task GetValueGenericTest()
         {
-            var mongoCstr = "mongodb://root:root@localhost:27017";
             var mongoDb = "configurationSettingsTestDb";
 
-            var service = new ConfigurationSettingService(mongoCstr, mongoDb);
+            var service = new ConfigurationSettingService(MongoCstr, mongoDb);
 
             var config = await service.GetByName(new ConfigurationSettingGetByNameRequestDto("App-Test", "Test-int"), default);
 
@@ -54,7 +55,7 @@ namespace DynamicConfiguration.Test.Lib
                     ), default);
             }
 
-            var reader = new ConfigurationReader("App-Test", mongoCstr, mongoDb, 0);
+            var reader = new ConfigurationReader("App-Test", MongoCstr, mongoDb, 0);
 
             var intValue = reader.GetValue<int>("Test-int");
             var stringValue = reader.GetValue<string>("Test-string");
@@ -70,10 +71,9 @@ namespace DynamicConfiguration.Test.Lib
         [Fact]
         public async Task GetValueTest()
         {
-            var mongoCstr = "mongodb://root:root@localhost:27017";
             var mongoDb = "configurationSettingsTestDb";
 
-            var service = new ConfigurationSettingService(mongoCstr, mongoDb);
+            var service = new ConfigurationSettingService(MongoCstr, mongoDb);
 
             var config = await service.GetByName(new ConfigurationSettingGetByNameRequestDto("App-Test", "Test-int"), default);
 
@@ -114,7 +114,7 @@ namespace DynamicConfiguration.Test.Lib
                     ), default);
             }
 
-            var reader = new ConfigurationReader("App-Test", mongoCstr, mongoDb, 0);
+            var reader = new ConfigurationReader("App-Test", MongoCstr, mongoDb, 0);
 
             var intValue = reader.GetValue("Test-int");
             var stringValue = reader.GetValue("Test-string");
