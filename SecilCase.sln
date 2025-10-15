@@ -23,6 +23,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Test", "Test", "{FB1159A8-1
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DynamicConfiguration.Test.Lib", "Test\DynamicConfiguration.Test.Lib\DynamicConfiguration.Test.Lib.csproj", "{4CC8EFE1-4DF9-497C-A6FD-1E0DC6CA53FC}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleApp1", "ConsoleApp1\ConsoleApp1.csproj", "{58283262-57F9-4B2F-9556-13B3DA9D8F7E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -53,6 +55,10 @@ Global
 		{4CC8EFE1-4DF9-497C-A6FD-1E0DC6CA53FC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4CC8EFE1-4DF9-497C-A6FD-1E0DC6CA53FC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4CC8EFE1-4DF9-497C-A6FD-1E0DC6CA53FC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{58283262-57F9-4B2F-9556-13B3DA9D8F7E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{58283262-57F9-4B2F-9556-13B3DA9D8F7E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{58283262-57F9-4B2F-9556-13B3DA9D8F7E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{58283262-57F9-4B2F-9556-13B3DA9D8F7E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

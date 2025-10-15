@@ -58,6 +58,7 @@ namespace DynamicConfiguration.Lib
         private async Task RefreshConfiguration()
         {
             await _service.RefreshListByApplication(new ConfigurationSettingRefreshListByApplicationRequestDto(_applicationName), default);
+            LoadConfiguration();
         }
 
         private object ConvertToType(string value, Type targetType)
